@@ -250,16 +250,16 @@ end
 
 function updategame()
  doblink()
- shipsprite = 13
+ shipsprite = 55
  --left btn pressed ⬅️
  if btn(0) and shipx > 0 then
   shipx -= 2
-  shipsprite = 12
+  shipsprite = 54
  end
  --right btn pressed ➡️
  if btn(1) and shipx < 128 - 8 then
   shipx += 2
-  shipsprite = 14
+  shipsprite = 56
  end
  --up btn pressed ⬆️
  if btn(2) and shipy > 0 then
