@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 35
+version 36
 __lua__
 --myfirstshmup (working title)
 --by ryuuforce
@@ -250,16 +250,16 @@ end
 
 function updategame()
  doblink()
- shipsprite = 55
+ shipsprite = 13
  --left btn pressed ⬅️
  if btn(0) and shipx > 0 then
   shipx -= 2
-  shipsprite = 54
+  shipsprite = 12
  end
  --right btn pressed ➡️
  if btn(1) and shipx < 128 - 8 then
   shipx += 2
-  shipsprite = 56
+  shipsprite = 14
  end
  --up btn pressed ⬆️
  if btn(2) and shipy > 0 then
