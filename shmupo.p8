@@ -4,7 +4,12 @@ __lua__
 --myfirstshmup (working title)
 --by ryuuforce
 
+
 --todo
+--more enemy sprites
+--win fanfare
+--play sound after a wave
+--increase wave counter when all enemies are dead
 --intro with my logo
 --gameintro where the ships starts into space
 --powerups
@@ -15,7 +20,6 @@ __lua__
 --more "layers" in the starfield
 --actual levels
 --enemy formations
---enemies that shoot bullets
 --bosses
 
 
@@ -41,6 +45,10 @@ function _init()
  y_seq = {3,11,7,11}
  --color sequence of the white blinking
  w_seq = {7,6,13,6}
+ 
+ wave = 1
+ 
+ rndenmy = 1
 end
 
 function doblink()
@@ -68,7 +76,7 @@ function startgame()
  -- x pos of the spaceship
  shipx = 64 
  -- y pos of the spaceship
- shipy = 64 
+ shipy = 100 
  
  --muzzle flash
  flashr = 0
@@ -106,7 +114,8 @@ function startgame()
  enbullets = {}
  --create enemy list
  enemies = {}
- createenemy()
+ --createenemy()
+ spawnwave(wave)
  --create star object
  stars = {}
  --initialize stars
@@ -188,22 +197,30 @@ end
 
 
 --constructor for an enemy
-function createenemy()
+function createenemy(entype,enx,eny)
  enemy = {}
  --enemy.x = 64 --test values
  --enemy.y = 20
- enemy.x = rnd(120)
- enemy.y = -20
+ enemy.x = enx
+ enemy.y = eny
+ enemy.aniframe = 1
  enemy.hp = 3
- enemy.spr = 43
+ if entype == 1 then
+  enemy.spr = 43
+  enemy.ani = {42,43}
+ elseif entype == 2 then
+  enemy.spr = 40
+  enemy.ani = {40}
+ end
  add(enemies,enemy)
 end
 
 function createenbullet()
- enbullet = {}
- enbullet.x = enemy.x
- enbullet.y = enemy.y
- 
+ if #enemies > 0 then
+	 enbullet = {}
+	 enbullet.x = enemies[rndenmy].x
+	 enbullet.y = enemies[rndenmy].y
+ end
  return enbullet
 end 
 
@@ -227,6 +244,27 @@ function createstar()
  star.c = starcol[col]
  return star
 end
+
+function spawnwave(enwave)
+ if wave==1 then
+  placens({
+   {1,1,2,2,2,2,2,2,1,1},
+   {2,2,2,2,2,2,2,2,2,2},
+   {1,1,2,2,2,2,2,2,1,1},
+   {2,2,2,2,2,2,2,2,2,2},
+  })
+ end 
+end
+
+function placens(lvl)
+
+ for y=1,4 do
+	 for x=1,10 do
+	  createenemy(lvl[y][x],x*12-6,y*12)
+	 end
+ end
+end
+
 -->8
 --update functions
 function _update()
@@ -284,13 +322,15 @@ function updategame()
   end
  end
  bultimer-=1
-
+ 
+ 
  
  --enemy movement
  updateenemy()
  
  --shoot enemy bullet
- if entimer == 45 then
+ if entimer == 45 and #enemies > 0 then
+  rndenmy = flr(rnd(#enemies))+1
   add(enbullets,createenbullet())
   entimer = 0
   enflashr = 6
@@ -324,10 +364,10 @@ function updategame()
   for mybul in all(bullets) do
 		 if col(myen,mybul) then
 		  sfx(10)
-		  if flr(myen.spr) >= 42 and flr(myen.spr) < 43 then
+		  if myen.spr == 42 or myen.spr == 43 then
 		   myen.spr = 58
-		  elseif flr(myen.spr) >= 43 then
-		   myen.spr = 59
+		  elseif myen.spr == 40 then
+		   myen.spr = 41
 		  end
 		  myen.hp -= 1
 		  if myen.hp <= 0 then   
@@ -337,7 +377,9 @@ function updategame()
 		   end
 		   score += 1		   
 		   del(enemies,myen)
-		   createenemy()
+		   if #enemies == 0 then
+		    sfx(11)
+		   end
 		  end
 		  del(bullets,mybul)
 		 end  
@@ -405,16 +447,16 @@ function updateparts(part)
 end
 
 function updateenemy()
- for i=1,#enemies do
-  enemies[i].y += 1
-  enemies[i].spr += 0.2
-  if enemies[i].spr > 44 then
-   enemies[i].spr = 42
-  end
+ for myen in all(enemies) do
   
-  if enemies[i].y > 128 then
-   del(enemies,enemies[i])
-   createenemy()
+  myen.aniframe += 0.2
+  if flr(myen.aniframe) > #myen.ani then
+   myen.aniframe = 1
+  end
+  myen.spr = myen.ani[flr(myen.aniframe)]
+  //delete enemy if off screen
+  if myen.y > 128 then
+   del(enemies,myen)
   end 
  end
  
@@ -504,8 +546,8 @@ function drawgame()
  print("score: "..score,80,1, 7) 
  
  --draw enemies
- for i=1,#enemies do 
-   spr(enemies[i].spr,enemies[i].x,enemies[i].y)
+ for myen in all(enemies) do 
+   spr(myen.spr,myen.x,myen.y)
  end
  --draws the ship
  if iframes <= 0 then
@@ -528,11 +570,10 @@ function drawgame()
  end
  
  --enemy muzzle flash
- for myen in all(enemies) do
-	 if enflashr > 0 then
-	  circfill(myen.x+4,myen.y+7,enflashr)
-	 end
- end
+ if enflashr > 0 and enemies[rndenmy] != nil then
+	 circfill(enemies[rndenmy].x+4,enemies[rndenmy].y+7,enflashr)
+	end
+
  --draws the bullet
  drawbullets()
  
@@ -622,14 +663,14 @@ __gfx__
 00000000566cc6659a9009a9077cc770009aa90007cccc7000033000000330000003300000088000000880000070070000788700070000700766667008899880
 00000000566666659a9009a9007cc700009aa90007cccc7000033000003333000003300000000000000000000007700000077000007007000076670000888800
 000000000990099009000090007cc700009999000077770000099000000990000009900000000000000000000000000000000000000770000007700000000000
-0000000000055000002000200077770000099000000990000bb00bb0bbb00bbb0330033000333300005555000055550000333300003333000000000550000000
-00000000205dd5020200020000077000009aa900009889000bbbbbb0bbbbbbbb33b33b3303333330053333500533335003777730037777300000005665000000
-0000000060566506002000200007700009a00a90098788900b8bb8b0bb8bb8bb3bbbbbb337833783537777355377773533700733337007330000005665000000
-0000000065d66d5602000200000770000a0990a0998888990bbbbbb0bbbbbbbb3b7717b337733773537007355370073533777733337777330000055665500000
-000000005d67c6d50020002000000000009aa9000009900000bbbb000bbbbbb00b7117b033333333053333500333333003333330033333300050556666550500
-00000000566cc665020002000000000000a00a000098890000b00b0000b00b000037730003300330330000330300003033000033030000300060566cc6650600
-0000000056666665002000200000000000099000098888900000000000000000030330300300003030000003030000303000000303000030006566cccc665600
-00000000099009900200020000000000000aa00000999900000000000000000003000030000000003600006303600630330000330330033000566cc7ccc66500
+0000000000055000002000200077770000099000000990000bb00bb0bbb00bbb0330033007700770005555000055550000333300003333000000000550000000
+00000000205dd5020200020000077000009aa900009889000bbbbbb0bbbbbbbb33b33b3377777777053333500533335003777730037777300000005665000000
+0000000060566506002000200007700009a00a90098788900b8bb8b0bb8bb8bb3bbbbbb377777777537777355377773533700733337007330000005665000000
+0000000065d66d5602000200000770000a0990a0998888990bbbbbb0bbbbbbbb3b7717b377777777537007355370073533777733337777330000055665500000
+000000005d67c6d50020002000000000009aa9000009900000bbbb000bbbbbb00b7117b007777770053333500333333003333330033333300050556666550500
+00000000566cc665020002000000000000a00a000098890000b00b0000b00b000037730000777700330000330300003033000033030000300060566cc6650600
+0000000056666665002000200000000000099000098888900000000000000000030330300707707030000003030000303000000303000030006566cccc665600
+00000000099009900200020000000000000aa00000999900000000000000000003000030070000703600006303600630330000330330033000566cc7ccc66500
 000000000000000000033000002222000099990000333300000550000005500000055000000000000077770000777700000000000000000005666cc7ccc66650
 0000000000000000003bb30002eeee2009aaaa90037777300053350000533500005335000000000007777770077777700000000000aaaa0005666cccccc66650
 000000000000000003bbbb302eeffee29aa77aa933700733005335000053350000533500000000007777777777777777000000000aa99aa005666cccccc66650
@@ -682,6 +723,7 @@ __sfx__
 0c1000201d0501d7001d7001d0501d0501b0511b0501b0501b0501b0501b0521b0421b0321d0501f050220502205024050270502700029050290502b0002b0502b0522b0522700024050220501d0501b00018050
 011000000c0530b6000c0530d6032065300000000000c0530000000000000000c053206530000000000000000c053000000000000000206530000000000000000c000000000c0530000020653000000000000000
 000200002c65026650226501e6501b650196501565012650106500e6500c6500a6500765006650036400264001630026300262001620016100161000600006000060000600006000060000600006000060000600
+01100000245502455029550295502b5502b5502e5502e550295002b5002b5002e5002e5002f500005000050000500005000050000500005000050000500005000050000500005000050000500005000050000500
 __music__
 00 07424344
 00 07424344
