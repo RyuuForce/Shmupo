@@ -450,10 +450,10 @@ function updategame()
 		  end
 		  myen.hp -= 1
 		  if myen.hp <= 0 then   
-		   --createexplosion(myen.x,myen.y)
-		   for i=1,30 do
-		    createparticle(myen.x+4,myen.y+4)
-		   end
+		   createexplosion(myen.x,myen.y)
+		   --for i=1,30 do
+		    --createparticle(myen.x+4,myen.y+4)
+		   --end
 		   score += 1		   
 		   del(enemies,myen)
 		   if #enemies == 0 then
