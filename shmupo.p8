@@ -69,7 +69,9 @@ end
 
 function startgame()
  gamemode = "game"
-
+ 
+ dx = 0
+ radius = 2
  score = 0
  wave = 0
  nextwave()
@@ -252,16 +254,36 @@ function createenemy(entype,enx,eny,enwait)
  add(enemies,enemy)
 end
 
-function createenbullet()
- if #enemies > 0 then
+function createenbullet(ang,spd)
+ if #enemies > 0 and enemies[rndenmy].type == 2 then
 	 enbullet = {}
 	 enbullet.x = enemies[rndenmy].x
 	 enbullet.y = enemies[rndenmy].y
-  enbullet.dx = shipx
-  enbullet.dy = shipy 
- end
- return enbullet
+  enbullet.dx = sin(ang)*spd
+  enbullet.dy = cos(ang)*spd
+  enbullet.type = 1
+  add(enbullets,enbullet)
+ elseif #enemies > 0 and enemies[rndenmy].type == 7 then	
+	 enbullet = {}
+		enbullet.x = enemies[rndenmy].x + 4 
+		enbullet.y = enemies[rndenmy].y + 4 
+  enbullet.dx = sin(ang)*spd
+  enbullet.dy = cos(ang)*spd
+  enbullet.type = 2
+  add(enbullets,enbullet)
+ end 
+ 
 end 
+
+function spread(num,spd,base)
+ if base == nil then
+  base = 0
+ end
+ 
+ for i=1,num do
+  createenbullet(1/num*i+base,spd)
+ end
+end
 
 --constructor for a bullet
 function createbullet()
@@ -301,14 +323,14 @@ function spawnwave()
  --  {2,3,4,5,6,6,5,4,3,2},
  --  {2,3,4,5,6,6,5,4,3,2},
  -- })
- if wave == 1 then
+ if wave == 2 then
   placens({
-   {2,3,4,5,6,6,5,4,3,2},
-   {2,3,4,5,6,6,5,4,3,2},
+   {5,3,4,5,6,6,5,4,3,5},
+   {5,3,4,5,6,6,5,4,3,5},
    {2,2,2,2,2,2,2,2,2,2},
    {6,6,6,6,6,6,6,6,6,6},
   })
- elseif wave == 2 then
+ elseif wave == 1 then
   placens({
    {0,0,0,0,7,0,0,0,0,0},
    {0,0,0,0,0,0,0,0,0,0},
@@ -453,9 +475,18 @@ function updategame()
  if entimer == 10 and enemies != nil then
   rndenmy = flr(rnd(#enemies))+1
   if enemies[rndenmy].type == 2 then
-	  add(enbullets,createenbullet())
+	  
+	  createenbullet(1,2)
+	  --add(enbullets,createenbullet(1,2))
 	  enflashr = 6
 	  sfx(1)
+  elseif enemies[rndenmy].type == 7 then
+   --for i=0,1,1/8 do
+	  -- add(enbullets,createenbullet(i,2))
+	  enflashr = 6
+	  sfx(1)
+	  --end
+	  spread(10,3,rnd())
   end
   entimer = 0
  end
@@ -576,6 +607,10 @@ end
 
 function updateenemy(myen)
   myen.aniframe += 0.2
+  if myen.type == 7 then
+   myen.x = cos(dx)*40+56
+   dx += 0.01
+  end
   if flr(myen.aniframe) > #myen.ani then
    myen.aniframe = 1
   end
@@ -596,12 +631,14 @@ function doenemy(myen)
 end
 
 function updateenbullets()
+ 
  --i need to do it in reverse order
  --or else the game will crash
  if #enbullets > 0 then
 	 for i=#enbullets,1,-1 do
-	  enbullets[i].y += 2
-	  if enbullets[i].y > 128 then
+	  enbullets[i].x += enbullets[i].dx 
+	  enbullets[i].y += enbullets[i].dy
+	  if enbullets[i].y > 128 or enbullets[i].y < 0 or enbullets[i].x > 128 or enbullets[i].x < 0 then
 	   del(enbullets,enbullets[i])
 	  end
 	 end
@@ -753,8 +790,10 @@ function drawgame()
  end
  
  --enemy muzzle flash
- if enflashr > 0 and enemies[rndenmy] != nil then
+ if enflashr > 0 and enemies[rndenmy] != nil and enemies[rndenmy].type == 2 then
 	 circfill(enemies[rndenmy].x+4,enemies[rndenmy].y+7,enflashr)
+	elseif enflashr > 0 and enemies[rndenmy] != nil and enemies[rndenmy].type == 7 then
+		circfill(enemies[rndenmy].x+8,enemies[rndenmy].y+11,enflashr)
 	end
 
  --draws the bullet
@@ -784,7 +823,11 @@ end
 
 function drawenbullets()
  for i=1,#enbullets do
-  spr(61,enbullets[i].x,enbullets[i].y+2)
+  if enbullets[i].type == 1 then
+   spr(61,enbullets[i].x,enbullets[i].y+2)
+  elseif enbullets[i].type == 2 then
+   spr(15,enbullets[i].x,enbullets[i].y+2)
+  end
  end
 end
 
