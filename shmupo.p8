@@ -324,35 +324,35 @@ function spawnwave()
  --  {2,3,4,5,6,6,5,4,3,2},
  --  {2,3,4,5,6,6,5,4,3,2},
  -- })
- if wave == 1 then        --Level 1: Intro to Enemies (Very Easy)
+ if wave == 1 then        --Level 1: Intro to Enemies (Very Easy)--
   placens({
    {0,0,0,0,0,0,0,0,0,0},
    {0,1,1,1,1,1,1,1,1,0},
    {0,1,1,1,1,1,1,1,1,0},
    {0,0,0,0,0,0,0,0,0,0},
   })
- elseif wave == 2 then    --Level 2: Intro to Enemies with more Health (Very Easy)
+ elseif wave == 2 then    --Level 2: Intro to Enemies with more Health (Very Easy)--
   placens({
    {0,0,0,0,0,0,0,0,0,0},
    {0,1,1,1,1,1,1,1,1,0},
    {0,1,1,1,1,1,1,1,1,0},
    {0,5,5,5,5,5,5,5,5,0},
   })
- elseif wave == 3 then    --Level 3: Intro to Shooting Enemies (Easy)  
+ elseif wave == 3 then    --Level 3: Intro to Shooting Enemies (Easy)-- 
   placens({
    {0,0,0,0,0,0,0,0,0,0},
    {1,1,1,1,1,1,1,1,1,1},
    {2,2,1,1,1,1,1,1,2,2},
    {5,5,5,5,5,5,5,5,5,5},
   })
- elseif wave == 4 then    --Level 4: More Shooting Enemies (Medium)
+ elseif wave == 4 then    --Level 4: More Shooting Enemies (Medium)--
   placens({
    {2,1,1,2,2,2,2,1,1,2},
    {0,2,1,1,1,1,1,1,2,0},
    {0,0,2,1,1,1,1,2,0,0},
    {0,0,0,2,2,2,2,0,0,0},
   })
- elseif wave == 5 then    --Level 5: Mini Boss (Medium)
+ elseif wave == 5 then    --Level 5: Mini Boss (Medium)--
   placens({
    {0,0,0,0,7,0,0,0,0,0},
    {0,0,0,0,0,0,0,0,0,0},
