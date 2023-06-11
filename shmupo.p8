@@ -77,6 +77,7 @@ function startgame()
  nextwave()
  gameovertime = 90
  startwaittime = 60
+ gamerestarttime = 90
  -- x pos of the spaceship
  shipx = 64 
  -- y pos of the spaceship
@@ -206,7 +207,7 @@ function nextwave()
  gamemode = "wavewait"
  wavetxttime = 60
  if wave > 5 then
-  gamemode = "gamewon"
+  gamemode = "gameoverwait"
  end
 end 
 
@@ -389,6 +390,8 @@ function _update()
   updategameoverwait()
  elseif gamemode == "gamewon" then
   updategamewon()
+ elseif gamemode == "gamerestartwait" then
+  updategamerestartwait()
  end
 end
 
@@ -668,9 +671,9 @@ function updategameoverwait()
 end
 
 function updategameover()
- doblink()
  if btnp(4) then
-  gamemode = "start"
+  sfx(22)
+  gamemode = "gamerestartwait"
   for myen in all(enemies) do
    del(enemies,myen)
   end
@@ -678,12 +681,13 @@ function updategameover()
    del(enemies,mybul)
   end
  end
+ doblink()
 end
 
 function updategamewon()
- doblink()
  if btnp(4) then
-  gamemode = "start"
+  gamemode = "gamerestartwait"
+  
   for myen in all(enemies) do
    del(enemies,myen)
   end
@@ -691,6 +695,18 @@ function updategamewon()
    del(enemies,mybul)
   end
  end
+ doblink()
+end
+
+function updategamerestartwait()
+ doblink()
+ doblink()
+ doblink()
+ if gamerestarttime > 0 then
+  gamerestarttime -= 1
+ else 
+  gamemode = "start"
+ end 
 end
 
 
@@ -720,6 +736,8 @@ function _draw()
   drawgameoverwait()
  elseif gamemode == "gamewon" then
   drawgamewon()
+ elseif gamemode == "gamerestartwait" then
+  drawgamerestartwait()
  end
 end
 
@@ -867,9 +885,13 @@ function drawgameoverwait()
 end
 
 function drawgameover()
- rectfill(0,50,128,80,12)
- print("gameover!",48,58,7)
- print("press 🅾️ to retry!",31,70,blink_y)
+ if health <= 0 then
+  rectfill(0,50,128,80,12)
+  print("gameover!",48,58,7)
+  print("press 🅾️ to retry!",31,70,blink_y)
+ else 
+  drawgamewon()
+ end
 end
 
 function drawgamewon()
@@ -877,6 +899,14 @@ function drawgamewon()
  print("congratulations!",35,50,7)
  print("you saved our planet!",25,62,7)
  print("press 🅾️ to retry!",31,74,blink_y)
+end
+
+function drawgamerestartwait()
+ if health <= 0 then
+  drawgameover()
+ else
+  drawgamewon()
+ end
 end
 
 function drawstars()
